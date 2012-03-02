@@ -1,0 +1,37 @@
+# shell script check if vertical auto split set
+# and then create an executable "mvi" to map command "mvi <file>" to "open -a MacVim.app <file>"
+#
+
+executable="/usr/bin/mvi"
+
+# check if vertical split set
+
+vsplit_set=`defaults read org.vim.MacVim | grep MMVerticalSplit | cut -d '=' -f 2`
+if ! [ "$vsplit_set" = " YES;" ]
+then
+	defaults write org.vim.MacVim MMVerticalSplit YES
+fi
+
+# drop executable in /usr/bin
+
+create_file(){
+	if [ -e "$executable" ]
+	then
+		echo "file mvi already exists."
+		exit 1
+	else
+		touch "$executable"
+		chmod 755 "$executable"
+	fi
+}
+
+write_commands_to_file(){
+	echo $1
+	echo "#!/bin/sh" > "$executable"
+	echo "# open file in current MacVim window" >> "$executable"
+	echo "open -a MacVim.app \$1" >> "$executable"
+}
+
+create_file
+write_commands_to_file
+
